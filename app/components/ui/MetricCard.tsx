@@ -3,7 +3,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   trend?: string | number;
-  description: string;
+  description?: string;
   icon: React.ReactNode;
 }
 

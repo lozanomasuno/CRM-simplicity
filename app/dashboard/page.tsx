@@ -4,7 +4,7 @@ import DashboardPage from "@/app/components/features//DashboardPage";
 export default function calendario() {
   return (
       <DashboardLayout>
-        <DashboardPage />
+        <DashboardPage />        
       </DashboardLayout>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 
 export const PAGE_SIZE_OPTIONS = [5, 10, 25, 50] as const;
 export type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
@@ -29,10 +29,8 @@ export function usePagination<T>(
   const [currentPage,     setCurrentPage]     = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState<PageSize>(defaultPageSize);
 
-  // Reset to page 1 whenever the items array length or pageSize change
-  useEffect(() => { setCurrentPage(1); }, [items.length, currentPageSize]);
-
   const totalPages = Math.max(1, Math.ceil(items.length / currentPageSize));
+  const effectivePage = Math.min(Math.max(1, currentPage), totalPages);
 
   const setPage = (p: number) => setCurrentPage(Math.min(Math.max(1, p), totalPages));
 
@@ -42,21 +40,21 @@ export function usePagination<T>(
   };
 
   const pageItems = useMemo(
-    () => items.slice((currentPage - 1) * currentPageSize, currentPage * currentPageSize),
-    [items, currentPage, currentPageSize]
+    () => items.slice((effectivePage - 1) * currentPageSize, effectivePage * currentPageSize),
+    [items, effectivePage, currentPageSize]
   );
 
   return {
-    page:     currentPage,
+    page:     effectivePage,
     pageSize: currentPageSize,
     totalPages,
     totalItems: items.length,
     pageItems,
     setPage,
     setPageSize,
-    canPrev: currentPage > 1,
-    canNext: currentPage < totalPages,
-    prev:    () => setPage(currentPage - 1),
-    next:    () => setPage(currentPage + 1),
+    canPrev: effectivePage > 1,
+    canNext: effectivePage < totalPages,
+    prev:    () => setPage(effectivePage - 1),
+    next:    () => setPage(effectivePage + 1),
   };
 }

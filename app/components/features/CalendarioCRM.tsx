@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer, SlotInfo, View } from 'react-big-calendar';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const withDragAndDrop = require('react-big-calendar/lib/addons/dragAndDrop').default;
@@ -61,6 +61,10 @@ const CalendarioCRM = () => {
   const vendedores         = useVendedoresStore((s) => s.vendedores);
 
   // Nav & view
+  const fetchCalendario    = useActividadesStore((s) => s.fetchCalendario);
+  const loading            = useActividadesStore((s) => s.loading);
+  const error              = useActividadesStore((s) => s.error);
+  const clearError         = useActividadesStore((s) => s.clearError);
   const [view, setView]               = useState<View>('month');
   const [date, setDate]               = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -129,6 +133,10 @@ const CalendarioCRM = () => {
     openModal({ actividad: event.resource });
   }, [openModal]);
 
+  useEffect(() => {
+    void fetchCalendario(filtroVendedor === 'todos' ? undefined : filtroVendedor);
+  }, [fetchCalendario, filtroVendedor]);
+
   const handleEventDrop = useCallback(({ event, start, end }: DnDArgs) => {
     reagendarActividad(
       event.resource.id,
@@ -152,6 +160,13 @@ const CalendarioCRM = () => {
 
   return (
     <div className="flex flex-col gap-5">
+      {loading && <p className="text-sm text-gray-500">Cargando calendario...</p>}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>{error}</p>
+          <button className="mt-2 font-semibold underline" onClick={clearError}>Cerrar</button>
+        </div>
+      )}
 
       {/* ── HEADER ───────────────────────────────────────────── */}
       <div className="bg-white dark:bg-mouse-gray rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">

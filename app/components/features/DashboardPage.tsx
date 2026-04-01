@@ -10,7 +10,7 @@ import TablaVendedores from './TablaVendedores';
 import { useLeadsStore } from '@/store/leadsStore';
 import { useVendedoresStore } from '@/store/vendedoresStore';
 import { useActividadesStore } from '@/store/actividadesStore';
-import { leadSeeds, vendedorSeeds, actividadSeeds } from '@/data/seeds';
+import { vendedorSeeds } from '@/data/seeds';
 import {
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -65,14 +65,20 @@ const ESTADO_LABEL: Record<string, string> = {
 
 // ─── Component ────────────────────────────────────────────────
 const DashboardPage = () => {
-  // Seed stores on mount (idempotent)
-  const seedLeads      = useLeadsStore((s) => s.seedIfEmpty);
-  const seedVendedores = useVendedoresStore((s) => s.seedIfEmpty);
+  const seedLeads       = useLeadsStore((s) => s.seedIfEmpty);
   const seedActividades = useActividadesStore((s) => s.seedIfEmpty);
+  const leadsLoading    = useLeadsStore((s) => s.loading);
+  const leadsError      = useLeadsStore((s) => s.error);
+  const actLoading      = useActividadesStore((s) => s.loading);
+  const actError        = useActividadesStore((s) => s.error);
+  const clearLeadsError = useLeadsStore((s) => s.clearError);
+  const clearActError   = useActividadesStore((s) => s.clearError);
+  const seedVendedores  = useVendedoresStore((s) => s.seedIfEmpty);
+
   useEffect(() => {
-    seedLeads(leadSeeds);
+    void seedLeads();
     seedVendedores(vendedorSeeds);
-    seedActividades(actividadSeeds);
+    void seedActividades();
   }, [seedLeads, seedVendedores, seedActividades]);
 
   const m = useDashboard();
@@ -88,6 +94,21 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
+      {(leadsLoading || actLoading) && (
+        <p className="text-sm text-gray-500">Cargando datos del dashboard...</p>
+      )}
+      {leadsError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>{leadsError}</p>
+          <button className="mt-2 font-semibold underline" onClick={clearLeadsError}>Cerrar</button>
+        </div>
+      )}
+      {actError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>{actError}</p>
+          <button className="mt-2 font-semibold underline" onClick={clearActError}>Cerrar</button>
+        </div>
+      )}
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div>

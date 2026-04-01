@@ -177,7 +177,7 @@ const AgendaDia = ({ fecha, onCrear, onEditar }: AgendaDiaProps) => {
                         {a.estado === 'pendiente' && (
                           <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); completarActividad(a.id); }}
+                            onClick={(e) => { e.stopPropagation(); void completarActividad(a.id); }}
                             className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10"
                             title="Completar"
                           >

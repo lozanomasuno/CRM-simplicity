@@ -166,7 +166,7 @@ class ActividadSeed extends EntitySeed<ActividadData> {
     //  6-9  → past, estado=completado
     // 10-14 → today / tomorrow        (upcoming)
     // 15-19 → future 3-7 days ahead
-    let fecha  = new Date();
+    const fecha  = new Date();
     const estado: EstadoActividad = index < 10 && index >= 6 ? 'completado' : 'pendiente';
 
     if (index < 6) {

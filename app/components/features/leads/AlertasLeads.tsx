@@ -6,6 +6,14 @@ import { useLeadsStore } from '@/store/leadsStore';
 export const AlertasLeads = () => {
   const leads      = useLeadsStore((state) => state.leads);
   const actividades = useLeadsStore((state) => state.actividades);
+  const [nowMs, setNowMs] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    const updateNow = () => setNowMs(Date.now());
+    updateNow();
+    const timer = setInterval(updateNow, 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Derivado reactivo: leads sin actividad en los últimos 3 días
   const leadsInactivos = React.useMemo(() => {
@@ -47,7 +55,7 @@ export const AlertasLeads = () => {
         ) : (
           leadsInactivos.map((lead) => {
             const ref  = lead.ultimaActividad ?? lead.createdAt;
-            const dias = Math.floor((Date.now() - new Date(ref).getTime()) / 86_400_000);
+            const dias = nowMs === null ? 0 : Math.floor((nowMs - new Date(ref).getTime()) / 86_400_000);
             return (
               <div
                 key={lead.id}

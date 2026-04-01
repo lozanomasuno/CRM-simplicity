@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Save } from 'lucide-react';
 import { useLeadsStore, EstadoLead, Lead } from '@/store/leadsStore';
 
@@ -19,47 +19,51 @@ const ESTADOS: { value: EstadoLead; label: string }[] = [
 const inputClass =
   'w-full mt-1 bg-gray-50 dark:bg-mouse-gray-dark p-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:border-neon-green-light outline-none text-gray-900 dark:text-white placeholder:text-gray-400';
 
+function getInitialFormState(lead?: Lead) {
+  return {
+    nombre: lead?.nombre ?? '',
+    telefono: lead?.telefono ?? '',
+    email: lead?.email ?? '',
+    estado: lead?.estado ?? ('nuevo' as EstadoLead),
+  };
+}
+
 export const ModalLead = ({ isOpen, onClose, lead }: ModalLeadProps) => {
   const { addLead, updateLead } = useLeadsStore();
-  const [nombre,   setNombre]   = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [email,    setEmail]    = useState('');
-  const [estado,   setEstado]   = useState<EstadoLead>('nuevo');
-
-  useEffect(() => {
-    if (lead) {
-      setNombre(lead.nombre);
-      setTelefono(lead.telefono);
-      setEmail(lead.email ?? '');
-      setEstado(lead.estado);
-    } else {
-      setNombre(''); setTelefono(''); setEmail(''); setEstado('nuevo');
-    }
-  }, [lead, isOpen]);
+  const loading = useLeadsStore((state) => state.loading);
+  let submitLabel = 'Guardar';
+  if (loading) submitLabel = 'Guardando...';
+  else if (lead) submitLabel = 'Actualizar';
+  const initialState = getInitialFormState(lead);
+  const [nombre,   setNombre]   = useState(initialState.nombre);
+  const [telefono, setTelefono] = useState(initialState.telefono);
+  const [email,    setEmail]    = useState(initialState.email);
+  const [estado,   setEstado]   = useState<EstadoLead>(initialState.estado);
 
   const handleClose = () => {
     setNombre(''); setTelefono(''); setEmail(''); setEstado('nuevo');
     onClose();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!nombre.trim() || !telefono.trim()) return;
+    let ok = false;
     if (lead) {
-      updateLead(lead.id, {
+      ok = await updateLead(lead.id, {
         nombre:   nombre.trim(),
         telefono: telefono.trim(),
         email:    email.trim() || undefined,
         estado,
       });
     } else {
-      addLead({
+      ok = await addLead({
         nombre:   nombre.trim(),
         telefono: telefono.trim(),
         email:    email.trim() || undefined,
         estado,
       });
     }
-    handleClose();
+    if (ok) handleClose();
   };
 
   if (!isOpen) return null;
@@ -133,11 +137,11 @@ export const ModalLead = ({ isOpen, onClose, lead }: ModalLeadProps) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!nombre.trim() || !telefono.trim()}
+            disabled={!nombre.trim() || !telefono.trim() || loading}
             className="inline-flex px-6 justify-center items-center gap-2 bg-neon-green-light text-mouse-gray py-3 rounded-xl font-black shadow-lg disabled:opacity-40 disabled:cursor-not-allowed hover:cursor-pointer"
           >
             <Save size={18} />
-            <span>{lead ? 'Actualizar' : 'Guardar'}</span>
+            <span>{submitLabel}</span>
           </button>
         </div>
 

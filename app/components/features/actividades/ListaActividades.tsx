@@ -40,8 +40,8 @@ type Filtro = 'todas' | 'pendientes' | 'atrasadas' | 'completadas';
 interface Props {
   actividades: ActividadData[];
   onEditar: (a: ActividadData) => void;
-  onCompletar: (id: string) => void;
-  onEliminar: (id: string) => void;
+  onCompletar: (id: string) => Promise<boolean>;
+  onEliminar: (id: string) => Promise<boolean>;
 }
 
 const ListaActividades = ({ actividades, onEditar, onCompletar, onEliminar }: Props) => {
@@ -196,7 +196,7 @@ const ListaActividades = ({ actividades, onEditar, onCompletar, onEliminar }: Pr
                     <div className="flex items-center justify-end gap-1">
                       {a.estado === 'pendiente' && (
                         <button
-                          onClick={() => onCompletar(a.id)}
+                          onClick={() => { void onCompletar(a.id); }}
                           title="Marcar como completada"
                           className="p-2 rounded-lg text-gray-400 hover:text-neon-green-light hover:bg-neon-green-light/10 transition-all hover:cursor-pointer"
                         >
@@ -211,7 +211,7 @@ const ListaActividades = ({ actividades, onEditar, onCompletar, onEliminar }: Pr
                         <Pencil size={16} />
                       </button>
                       <button
-                        onClick={() => onEliminar(a.id)}
+                        onClick={() => { void onEliminar(a.id); }}
                         title="Eliminar"
                         className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:cursor-pointer"
                       >

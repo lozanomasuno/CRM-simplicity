@@ -38,6 +38,10 @@ const fromDatetimeLocal = (val: string): string => new Date(val).toISOString();
 
 export const ModalActividad = ({ isOpen, onClose, actividad, initialLeadId, initialFecha }: ModalActividadProps) => {
   const { addActividad, updateActividad } = useActividadesStore();
+  const loading = useActividadesStore((state) => state.loading);
+  let submitLabel = 'Guardar';
+  if (loading) submitLabel = 'Guardando...';
+  else if (actividad) submitLabel = 'Actualizar';
   const leads     = useLeadsStore((state) => state.leads);
   const vendedores = useVendedoresStore((state) => state.vendedores);
 
@@ -75,7 +79,7 @@ export const ModalActividad = ({ isOpen, onClose, actividad, initialLeadId, init
 
   const handleClose = () => onClose();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!descripcion.trim() || !fecha) return;
     const data = {
       tipo,
@@ -88,10 +92,12 @@ export const ModalActividad = ({ isOpen, onClose, actividad, initialLeadId, init
     };
     if (actividad) {
       updateActividad(actividad.id, data);
+      handleClose();
     } else {
-      addActividad(data);
+      const ok = await addActividad(data);
+      if (!ok) return;
+      handleClose();
     }
-    handleClose();
   };
 
   if (!isOpen) return null;
@@ -173,11 +179,11 @@ export const ModalActividad = ({ isOpen, onClose, actividad, initialLeadId, init
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!descripcion.trim() || !fecha}
+            disabled={!descripcion.trim() || !fecha || loading}
             className="inline-flex px-6 justify-center items-center gap-2 bg-neon-green-light text-mouse-gray py-3 rounded-xl font-black shadow-lg disabled:opacity-40 disabled:cursor-not-allowed hover:cursor-pointer"
           >
             <Save size={18} />
-            <span>{actividad ? 'Actualizar' : 'Guardar'}</span>
+            <span>{submitLabel}</span>
           </button>
         </div>
 

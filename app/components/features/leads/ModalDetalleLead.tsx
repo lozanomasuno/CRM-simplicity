@@ -38,7 +38,7 @@ const inputClass =
   'w-full mt-1 bg-gray-50 dark:bg-mouse-gray-dark p-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:border-neon-green-light outline-none text-gray-900 dark:text-white placeholder:text-gray-400 text-sm';
 
 export const ModalDetalleLead = ({ isOpen, onClose, lead }: Props) => {
-  const { changeLeadStatus, addActividad } = useLeadsStore();
+  const { changeLeadStatus, addActividad, fetchActividadesByLead } = useLeadsStore();
 
   // Selectors primitivos — nunca crean referencias nuevas
   const allLeads      = useLeadsStore((state) => state.leads);
@@ -64,14 +64,21 @@ export const ModalDetalleLead = ({ isOpen, onClose, lead }: Props) => {
   const [descripcion, setDescripcion] = useState('');
   const [showForm,    setShowForm]    = useState(false);
 
+  React.useEffect(() => {
+    if (isOpen && lead?.id) {
+      fetchActividadesByLead(lead.id);
+    }
+  }, [fetchActividadesByLead, isOpen, lead?.id]);
+
   const handleClose = () => {
     setDescripcion(''); setShowForm(false); setTipo('llamada');
     onClose();
   };
 
-  const handleAddActividad = () => {
+  const handleAddActividad = async () => {
     if (!descripcion.trim() || !lead) return;
-    addActividad({ leadId: lead.id, tipo, descripcion: descripcion.trim() });
+    const ok = await addActividad({ leadId: lead.id, tipo, descripcion: descripcion.trim() });
+    if (!ok) return;
     setDescripcion('');
     setShowForm(false);
   };
@@ -114,7 +121,7 @@ export const ModalDetalleLead = ({ isOpen, onClose, lead }: Props) => {
             {(Object.keys(ESTADO_CONFIG) as EstadoLead[]).map((e) => (
               <button
                 key={e}
-                onClick={() => changeLeadStatus(liveLead.id, e)}
+                onClick={() => { void changeLeadStatus(liveLead.id, e); }}
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all hover:cursor-pointer border
                   ${liveLead.estado === e
                     ? `${ESTADO_CONFIG[e].color} border-current`

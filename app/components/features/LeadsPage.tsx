@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Target, UserCheck, Handshake, CheckCircle } from 'lucide-react';
 import { useLeadsStore, Lead, EstadoLead } from '@/store/leadsStore';
-import { leadSeeds } from '@/data/seeds';
 import TablaLeads from './leads/TablaLeads';
 import { ModalLead } from './leads/ModalLead';
 import { ModalDetalleLead } from './leads/ModalDetalleLead';
@@ -24,8 +23,13 @@ const ESTADO_STATS: {
 const LeadsPage = () => {
   const leads = useLeadsStore((state) => state.leads);
   const seedIfEmpty = useLeadsStore((state) => state.seedIfEmpty);
+  const loading = useLeadsStore((state) => state.loading);
+  const error = useLeadsStore((state) => state.error);
+  const clearError = useLeadsStore((state) => state.clearError);
 
-  useEffect(() => { seedIfEmpty(leadSeeds); }, [seedIfEmpty]);
+  useEffect(() => {
+    seedIfEmpty();
+  }, [seedIfEmpty]);
 
   const [isModalLeadOpen, setIsModalLeadOpen] = useState(false);
   const [isDetalleOpen,   setIsDetalleOpen]   = useState(false);
@@ -86,6 +90,16 @@ const LeadsPage = () => {
       </div>
 
       {/* Métricas por estado */}
+      {loading && (
+        <p className="mb-4 text-sm text-gray-500">Cargando leads...</p>
+      )}
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>{error}</p>
+          <button className="mt-2 font-semibold underline" onClick={clearError}>Cerrar</button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {ESTADO_STATS.map(({ estado, label, icon, iconColor }) => {
           const count = leads.filter((l) => l.estado === estado).length;
@@ -122,6 +136,7 @@ const LeadsPage = () => {
       </div>
 
       <ModalLead
+        key={`${isModalLeadOpen ? 'open' : 'closed'}-${leadEditar?.id ?? 'new'}`}
         isOpen={isModalLeadOpen}
         onClose={handleCloseModal}
         lead={leadEditar}

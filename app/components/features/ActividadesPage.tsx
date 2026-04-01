@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, ListChecks, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useActividadesStore } from '@/store/actividadesStore';
 import type { ActividadData } from '@/data/models';
-import { actividadSeeds } from '@/data/seeds';
 import { ActividadModel } from '@/data/models';
 import ListaActividades from './actividades/ListaActividades';
 import { ModalActividad } from './actividades/ModalActividad';
@@ -13,8 +12,13 @@ const ActividadesPage = () => {
   const seedIfEmpty        = useActividadesStore((state) => state.seedIfEmpty);
   const completarActividad = useActividadesStore((state) => state.completarActividad);
   const eliminarActividad  = useActividadesStore((state) => state.eliminarActividad);
+  const loading            = useActividadesStore((state) => state.loading);
+  const error              = useActividadesStore((state) => state.error);
+  const clearError         = useActividadesStore((state) => state.clearError);
 
-  useEffect(() => { seedIfEmpty(actividadSeeds); }, [seedIfEmpty]);
+  useEffect(() => {
+    seedIfEmpty();
+  }, [seedIfEmpty]);
 
   const [isModalOpen,       setIsModalOpen]       = useState(false);
   const [actividadEditar,   setActividadEditar]   = useState<ActividadData | undefined>(undefined);
@@ -74,6 +78,16 @@ const ActividadesPage = () => {
       </div>
 
       {/* Métricas */}
+      {loading && (
+        <p className="mb-4 text-sm text-gray-500">Cargando actividades...</p>
+      )}
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p>{error}</p>
+          <button className="mt-2 font-semibold underline" onClick={clearError}>Cerrar</button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {METRICAS_CONFIG.map((m) => (
           <div
